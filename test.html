@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MysteryRail Help Page</title>
+    <style>
+        @font-face {
+            font-family: 'britrdn';
+            src: url('britrdn_.ttf') format('truetype');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'britrdn', Verdana, Arial, sans-serif; /* Custom font */
+            background-color: #003366;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            color: white;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 10px;
+        }
+
+        .logo {
+            max-height: 120px;
+            max-width: 90%;
+            height: auto;
+            width: auto;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ffd700;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #003366;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-weight: bold;
+        }
+
+        /* Dropdown FAQ styles */
+        .faq-container {
+            width: 300px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ffd700;
+        }
+
+        .faq-question {
+            background-color: #003366;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 10px;
+            background-color: #f1f1f1;
+            color: #003366;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+
+        .faq-question:hover {
+            background-color: #ffbf00;
+        }
+
+        .faq-question.active {
+            background-color: #ffbf00;
+        }
+
+        .faq-question:active {
+            background-color: #ffd700;
+        }
+
+        /* Big Help Needed Button */
+        .help-button {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #ff0000;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 250px;
+        }
+
+        .help-button:hover {
+            background-color: #cc0000;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .logo-container {
+                padding: 10px;
+            }
+
+            .logo {
+                max-height: 100px;
+            }
+
+            .container, .faq-container {
+                width: 90%; /* Adjust container width on small screens */
+                padding: 20px;
+                text-align: center; /* Ensure text is centered */
+            }
+
+            .help-button {
+                width: 80%; /* Make the button fit better on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="Mysteryrail_logo.png" alt="Mystery Rail Logo" class="logo">
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="faq-container">
+        <h2>Frequently Asked Questions</h2>
+
+        <!-- FAQ Item 1 -->
+        <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(0)">What is MysteryRail?</button>
+            <div class="faq-answer">
+                <p>MysteryRail is a thrilling train-themed puzzle game...</p>
+            </div>
+        </div>
+
+        <!-- FAQ Item 2 -->
+        <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(1)">How do I play?</button>
+            <div class="faq-answer">
+                <p>To play, simply follow the instructions on the screen...</p>
+            </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="faq-item">
+            <button class="faq-question" onclick="toggleFAQ(2)">Where can I find support?</button>
+            <div class="faq-answer">
+                <p>If you need support, visit our contact page or email us...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Button -->
+    <button class="help-button" onclick="helpNeeded()">HELP NEEDED</button>
+
+    <script>
+        // Toggle FAQ Answers
+        function toggleFAQ(index) {
+            const answers = document.getElementsByClassName('faq-answer');
+            const questions = document.getElementsByClassName('faq-question');
+            
+            if (answers[index].style.display === 'none' || answers[index].style.display === '') {
+                answers[index].style.display = 'block';
+                questions[index].classList.add('active');
+            } else {
+                answers[index].style.display = 'none';
+                questions[index].classList.remove('active');
+            }
+        }
+
+        // HELP NEEDED Button Action
+        function helpNeeded() {
+            alert("A support representative will be with you shortly.");
+        }
+    </script>
+</body>
+</html>
