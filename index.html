@@ -17,7 +17,6 @@
             flex-direction: column; /* Stack the title and the login box */
             text-align: center;
         }
-
         .title {
             font-size: 3em; /* Large text */
             font-weight: bold;
@@ -26,7 +25,6 @@
             color: white; /* White text */
             text-shadow: 2px 2px #003366; /* Dark blue shadow */
         }
-
         .container {
             text-align: center;
             padding: 20px;
@@ -37,13 +35,11 @@
             width: 300px;
             border: 2px solid #ffc107; /* Yellow border */
         }
-
         h2 {
             color: #003366; /* Dark blue text */
             font-size: 1.5em;
             margin-bottom: 10px;
         }
-
         input[type="text"] {
             width: 100%;
             padding: 10px;
@@ -52,7 +48,6 @@
             border-radius: 3px;
             font-size: 0.9em;
         }
-
         button {
             width: 100%;
             padding: 10px;
@@ -64,11 +59,9 @@
             font-size: 1em;
             font-weight: bold;
         }
-
         button:hover {
             background-color: #ffbf00; /* Slightly darker yellow */
         }
-
         .message {
             margin-top: 10px;
             font-size: 1em;
@@ -84,19 +77,21 @@
         <button onclick="checkPassword()">Submit</button>
         <div id="message" class="message"></div>
     </div>
-
     <script>
         function checkPassword() {
             const correctPassword = "TRAIN"; // Deciphered password
             const userInput = document.getElementById("password").value;
             const messageDiv = document.getElementById("message");
-
             if (userInput.toUpperCase() === correctPassword) {
                 messageDiv.style.color = "#007b00"; // Green for correct message
-                messageDiv.textContent = "Correct! Well done.";
+                messageDiv.textContent = "Correct! Redirecting...";
+                // Add a small delay before redirecting
+                setTimeout(() => {
+                    window.location.href = 'https://ledmics.github.io/audiocall.html';
+                }, 300); // 1 second delay
             } else {
                 messageDiv.style.color = "#ff0000"; // Red for incorrect message
-                messageDiv.textContent = "Incorrect password. Try again.";
+                messageDiv.textContent = "Incorrect.";
             }
         }
     </script>
