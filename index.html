@@ -18,13 +18,17 @@
         
         .logo-container {
             width: 100%;
-            padding: 40px 20px 60px 20px;
-            text-align: center;
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically if needed */
+            padding: 20px 10px;
         }
         
         .logo {
-            height: 160px; /* Adjusted to match the size in your screenshot */
-            width: auto;
+            max-height: 120px; /* Reduce height for better balance */
+            max-width: 90%; /* Ensure the logo doesn't overflow on mobile screens */
+            height: auto; /* Maintain aspect ratio */
+            width: auto; /* Maintain aspect ratio */
         }
         
         .container {
@@ -76,6 +80,22 @@
             font-size: 14px;
             color: #003366;
             height: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .logo-container {
+                padding: 10px; /* Further reduce padding */
+            }
+            
+            .logo {
+                max-height: 100px; /* Smaller logo for very small screens */
+            }
+            
+            .container {
+                width: 90%; /* Use more of the screen width on smaller devices */
+                padding: 20px;
+            }
         }
     </style>
 </head>
