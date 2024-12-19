@@ -6,71 +6,83 @@
     <title>MysteryRail Login Page</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 0;
+            min-height: 100vh;
             font-family: "Verdana", Arial, sans-serif;
-            background-color: #003366; /* Dark blue background */
-            color: white;
-            flex-direction: column; /* Stack the title and the login box */
+            background-color: #003366;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .logo-container {
+            width: 100%;
+            padding: 40px 20px 60px 20px;
             text-align: center;
         }
-        .title {
-            font-size: 3em; /* Large text */
-            font-weight: bold;
-            margin-top: 30px; /* Add space from the top */
-            margin-bottom: 50px; /* Space between title and login box */
-            color: white; /* White text */
-            text-shadow: 2px 2px #003366; /* Dark blue shadow */
+        
+        .logo {
+            height: 160px; /* Adjusted to match the size in your screenshot */
+            width: auto;
         }
+        
         .container {
-            text-align: center;
-            padding: 20px;
-            background: #ffffff; /* White box */
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            max-width: 90%;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
             width: 300px;
-            border: 2px solid #ffc107; /* Yellow border */
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ffd700;
         }
+        
         h2 {
-            color: #003366; /* Dark blue text */
-            font-size: 1.5em;
-            margin-bottom: 10px;
+            color: #003366;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-weight: bold;
         }
+        
         input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
             border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 0.9em;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
         }
+        
         button {
             width: 100%;
-            padding: 10px;
-            background-color: #ffc107; /* Yellow button */
-            color: #003366; /* Dark blue text */
+            padding: 12px;
+            background-color: #ffc107;
+            color: #003366;
             border: none;
-            border-radius: 3px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 16px;
             font-weight: bold;
+            margin-top: 10px;
         }
+        
         button:hover {
-            background-color: #ffbf00; /* Slightly darker yellow */
+            background-color: #ffbf00;
         }
+        
         .message {
             margin-top: 10px;
-            font-size: 1em;
-            color: #003366; /* Dark blue */
+            font-size: 14px;
+            color: #003366;
+            height: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="title">Mystery Rail</div>
+    <div class="logo-container">
+        <img src="Mysteryrail_logo.png" alt="Mystery Rail Logo" class="logo">
+    </div>
     <div class="container">
         <h2>Login</h2>
         <input type="text" id="password" placeholder="Password">
@@ -79,18 +91,17 @@
     </div>
     <script>
         function checkPassword() {
-            const correctPassword = "TRAIN"; // Deciphered password
+            const correctPassword = "TRAIN";
             const userInput = document.getElementById("password").value;
             const messageDiv = document.getElementById("message");
             if (userInput.toUpperCase() === correctPassword) {
-                messageDiv.style.color = "#007b00"; // Green for correct message
-                messageDiv.textContent = "Correct! Redirecting...";
-                // Add a small delay before redirecting
+                messageDiv.style.color = "#007b00";
+                messageDiv.textContent = "Correct.";
                 setTimeout(() => {
                     window.location.href = 'https://ledmics.github.io/audiocall.html';
-                }, 300); // 1 second delay
+                }, 300);
             } else {
-                messageDiv.style.color = "#ff0000"; // Red for incorrect message
+                messageDiv.style.color = "#ff0000";
                 messageDiv.textContent = "Incorrect.";
             }
         }
