@@ -13,22 +13,22 @@
             background-color: #003366;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
         }
         
         .logo-container {
-            width: 100%;
             display: flex;
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically if needed */
+            justify-content: center;
+            align-items: center;
             padding: 20px 10px;
         }
         
         .logo {
-            max-height: 120px; /* Reduce height for better balance */
-            max-width: 90%; /* Ensure the logo doesn't overflow on mobile screens */
-            height: auto; /* Maintain aspect ratio */
-            width: auto; /* Maintain aspect ratio */
+            max-height: 120px;
+            max-width: 90%;
+            height: auto;
+            width: auto;
         }
         
         .container {
@@ -85,15 +85,15 @@
         /* Responsive Design */
         @media (max-width: 600px) {
             .logo-container {
-                padding: 10px; /* Further reduce padding */
+                padding: 10px;
             }
             
             .logo {
-                max-height: 100px; /* Smaller logo for very small screens */
+                max-height: 100px;
             }
             
             .container {
-                width: 90%; /* Use more of the screen width on smaller devices */
+                width: 90%;
                 padding: 20px;
             }
         }
