@@ -1,4 +1,4 @@
-const plants = ['Corn', 'Cabbage', 'Cactus', 'Tomato', 'Potato'];
+const plants = ['Corn', 'Lettuce', 'Eggplant', 'Tomato', 'Potato'];
 let currentRound = 1;
 let remainingSeeds = 3;
 let board = Array(9).fill(null);
@@ -40,24 +40,47 @@ function initializeBoard() {
     board = Array(9).fill(null);
 }
 
+function hasConflict(newRule, existingRules) {
+    return existingRules.some(rule => {
+        const samePair = (newRule.plant1 === rule.plant1 && newRule.plant2 === rule.plant2) ||
+                         (newRule.plant1 === rule.plant2 && newRule.plant2 === rule.plant1);
+        return samePair && newRule.mustBeAdjacent !== rule.mustBeAdjacent;
+    });
+}
+
 function generateRules() {
     rules = [];
     plantsInRoundRules = [];
     const numRules = Math.min(currentRound, 3);
+    const maxAttempts = 100;
+
     for (let i = 0; i < numRules; i++) {
-        let plant1, plant2;
+        let plant1, plant2, mustBeAdjacent;
+        let attempts = 0;
+        let valid = false;
+
         do {
             plant1 = plants[Math.floor(Math.random() * plants.length)];
             plant2 = plants[Math.floor(Math.random() * plants.length)];
-        } while (plant1 === plant2);
+            mustBeAdjacent = Math.random() < 0.5;
+            attempts++;
 
-        const mustBeAdjacent = Math.random() < 0.5;
-        rules.push({
-            plant1,
-            plant2,
-            mustBeAdjacent
-        });
+            // Check for validity
+            const tempRule = { plant1, plant2, mustBeAdjacent };
+            valid = plant1 !== plant2 && 
+                   !hasConflict(tempRule, rules) && 
+                   plantsInRoundRules.filter(p => ![plant1, plant2].includes(p)).length <= remainingSeeds - 2;
 
+        } while (!valid && attempts < maxAttempts);
+
+        if (!valid) {
+            // Fallback to simpler rule if stuck
+            plant1 = plants[Math.floor(Math.random() * plants.length)];
+            plant2 = plants.filter(p => p !== plant1)[Math.floor(Math.random() * (plants.length - 1))];
+            mustBeAdjacent = true;
+        }
+
+        rules.push({ plant1, plant2, mustBeAdjacent });
         if (!plantsInRoundRules.includes(plant1)) plantsInRoundRules.push(plant1);
         if (!plantsInRoundRules.includes(plant2)) plantsInRoundRules.push(plant2);
     }
@@ -155,9 +178,13 @@ function checkRules() {
 
 function startRound() {
     initializeBoard();
-    remainingSeeds = currentRound + 2;
+    remainingSeeds = Math.min(currentRound + 2, 8); // Cap at 8 seeds
+
+    if (currentRound !== 1) {
+        clearTerminal();
+    }
+
     generateRules();
-    printToTerminal(`                             `);
     printToTerminal(`=== Round ${currentRound} ===`);
     printToTerminal(`You have ${remainingSeeds} seeds to plant.`);
     printToTerminal('Rules:');
@@ -172,9 +199,10 @@ function displayRules() {
 
 function showHelp() {
     printToTerminal('Available commands:');
-    printToTerminal('- plant <type> <coordinate> (e.g., "plant Corn A1")');
+    printToTerminal('- plant <type> <coordinate> (e.g., "plant potato a1")');
     printToTerminal('- check (verify your garden)');
     printToTerminal('- rules (re-iterate the rules)');
+    printToTerminal('- clear (clears the terminal)');
     printToTerminal('- help (show this message)');
     printToTerminal('You can only plant plants involved in the current round\'s rules.');
     printToTerminal('Allowed plants: ' + plantsInRoundRules.join(', '));
@@ -206,8 +234,11 @@ document.getElementById('command-input').addEventListener('keypress', function(e
                 printToTerminal('Success! Moving to next round...');
                 setTimeout(startRound, 1500);
             } else {
-                currentRound = 1;
-                printToTerminal('Failed! Starting over from round 1...');
+                // Reset to round 1 but keep progression after round 6
+                currentRound = currentRound > 6 ? 7 : 1;
+                printToTerminal(currentRound > 6 
+                    ? 'Failed! Continuing from round 7...' 
+                    : 'Failed! Starting over from round 1...');
                 setTimeout(startRound, 1500);
             }
             return;
@@ -263,14 +294,16 @@ document.getElementById('command-input').addEventListener('keypress', function(e
 window.onload = function() {
     printToTerminal('welcome to verdant.exe');
     printToTerminal('                       ');
-    printToTerminal('Type "help" for commands.');
     printToTerminal('=== How to Play ===');
     printToTerminal('1. The game board is a 3x3 grid (A1-C3).');
     printToTerminal('2. You must plant different types of plants on the grid.');
-    printToTerminal('3. Each round has specific rules about which plants must or cannot be adjacent.');
+    printToTerminal('3. Each round has specific rules about which plants must or must not be touching (including diagonally).');
     printToTerminal('4. You will have a limited number of seeds to plant each round.');
     printToTerminal('5. After planting, type "check" to see if you followed the rules.');
     printToTerminal('6. If you succeed, you move to the next round. If you fail, you start over.');
+    printToTerminal('7. To play the game, type text commands in the box below.');
+    printToTerminal('                       ');
+    printToTerminal('Type "help" for a list of commands.');
     printToTerminal('                       ');
     startRound();
 };
