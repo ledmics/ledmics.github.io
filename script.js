@@ -343,8 +343,7 @@ document.getElementById('command-input').addEventListener('keypress', function(e
 
 window.onload = function() {
     printToTerminal('Welcome to Verdant!');
-    printToTerminal('Grow plants according to the rules each round');
-    printToTerminal('Reach round 7 to win!');
+    printToTerminal('Sow seeds according to the rules each round');
     printToTerminal('                       ');
     printToTerminal('------------------------');
     printToTerminal('=== How to Play ===');
