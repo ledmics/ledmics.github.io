@@ -301,7 +301,8 @@ window.onload = function() {
     printToTerminal('4. You will have a limited number of seeds to plant each round.');
     printToTerminal('5. After planting, type "check" to see if you followed the rules.');
     printToTerminal('6. If you succeed, you move to the next round. If you fail, you start over.');
-    printToTerminal('7. To play the game, type text commands in the box below.');
+    printToTerminal('7. You must use all plant types atleast once.');
+    printToTerminal('8. To play the game, type text commands in the box below.');
     printToTerminal('                       ');
     printToTerminal('Type "help" for a list of commands.');
     printToTerminal('                       ');
