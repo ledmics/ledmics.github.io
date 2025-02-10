@@ -4,6 +4,7 @@ let remainingSeeds = 3;
 let board = Array(9).fill(null);
 let rules = [];
 let plantsInRoundRules = [];
+let undoStack = [];
 
 function initializeBoard() {
     const gameBoard = document.getElementById('game-board');
@@ -15,20 +16,18 @@ function initializeBoard() {
     for (let i = 0; i < 3; i++) {
         const label = document.createElement('div');
         label.className = 'label';
-        label.textContent = String.fromCharCode(65 + i); // A, B, C
+        label.textContent = String.fromCharCode(65 + i);
         columnLabels.appendChild(label);
     }
     gameBoard.appendChild(columnLabels);
 
     // Add row labels and cells
     for (let row = 0; row < 3; row++) {
-        // Add row label (1, 2, 3)
         const rowLabel = document.createElement('div');
         rowLabel.className = 'row-label';
         rowLabel.textContent = row + 1;
         gameBoard.appendChild(rowLabel);
 
-        // Add cells for the row
         for (let col = 0; col < 3; col++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
@@ -39,6 +38,7 @@ function initializeBoard() {
 
     board = Array(9).fill(null);
 }
+
 
 function hasConflict(newRule, existingRules) {
     return existingRules.some(rule => {
@@ -174,21 +174,35 @@ function checkRules() {
     return true;
 }
 
-  
+function preserveRules() {
+    return {
+        savedRules: [...rules],
+        savedPlants: [...plantsInRoundRules]
+    };
+} 
 
-function startRound() {
+// Modified startRound function
+function startRound(newRound = true) {
+    undoStack = [];
     initializeBoard();
-    remainingSeeds = Math.min(currentRound + 2, 8); // Cap at 8 seeds
+    remainingSeeds = Math.min(currentRound + 2, 8);
+    
+    if (newRound) {
+        generateRules();
+    }
 
     if (currentRound !== 1) {
         clearTerminal();
     }
-
-    generateRules();
+    
     printToTerminal(`=== Round ${currentRound} ===`);
-    printToTerminal(`You have ${remainingSeeds} seeds to plant.`);
+    printToTerminal(`Seeds available: ${remainingSeeds}`);
     printToTerminal('Rules:');
     displayRules();
+    
+    if (currentRound === 1) {
+        printToTerminal('Example: tomato a1');
+    }
 }
 
 function displayRules() {
@@ -198,47 +212,66 @@ function displayRules() {
 }
 
 function showHelp() {
-    printToTerminal('Available commands:');
-    printToTerminal('- plant <type> <coordinate> (e.g., "plant potato a1")');
-    printToTerminal('- check (verify your garden)');
-    printToTerminal('- rules (re-iterate the rules)');
-    printToTerminal('- clear (clears the terminal)');
-    printToTerminal('- help (show this message)');
-    printToTerminal('You can only plant plants involved in the current round\'s rules.');
+    printToTerminal('Commands:');
+    printToTerminal('- plant <type> <coord> (e.g., "plant potato a1")');
+    printToTerminal('- check      Verify garden');
+    printToTerminal('- rules      Show current rules');
+    printToTerminal('- undo       Undo last action');
+    printToTerminal('- restart    Restart current round');
+    printToTerminal('- clear      Clean terminal');
+    printToTerminal('- help       Show this message');
     printToTerminal('Allowed plants: ' + plantsInRoundRules.join(', '));
     printToTerminal('Coordinates: A1-C3');
 }
 
+function undoLastAction() {
+    if (undoStack.length > 0) {
+        const prevState = undoStack.pop();
+        board = prevState.board;
+        remainingSeeds = prevState.seeds;
+        
+        // Update board display
+        board.forEach((plant, index) => {
+            const cell = document.getElementById(`cell-${index}`);
+            cell.textContent = plant ? plant[0] : '';
+        });
+        printToTerminal('Undo successful');
+    } else {
+        printToTerminal('Nothing to undo');
+    }
+}
+
 document.getElementById('command-input').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-        const command = this.value.trim().toLowerCase();
-        printToTerminal(`> ${this.value.trim()}`);
+        const rawInput = this.value.trim();
+        const command = rawInput.toLowerCase();
+        printToTerminal(`> ${rawInput}`);
         this.value = '';
 
+        // Handle commands
         if (command === 'help') {
             showHelp();
             return;
         }
 
         if (command === 'rules') {
-            printToTerminal('Current Round Rules:');
+            printToTerminal('Current Rules:');
             displayRules();
             return;
         }
 
         if (command === 'check') {
             if (remainingSeeds > 0) {
-                printToTerminal('You must plant all seeds before checking!');
+                printToTerminal('Plant all seeds first!');
             } else if (checkRules()) {
                 currentRound++;
-                printToTerminal('Success! Moving to next round...');
+                printToTerminal('Success! Advancing...');
                 setTimeout(startRound, 1500);
             } else {
-                // Reset to round 1 but keep progression after round 6
                 currentRound = currentRound > 6 ? 7 : 1;
                 printToTerminal(currentRound > 6 
                     ? 'Failed! Continuing from round 7...' 
-                    : 'Failed! Starting over from round 1...');
+                    : 'Failed! Restarting from round 1...');
                 setTimeout(startRound, 1500);
             }
             return;
@@ -249,62 +282,85 @@ document.getElementById('command-input').addEventListener('keypress', function(e
             return;
         }
 
-        const match = command.match(/plant (\w+) ([a-c][1-3])/i);
+        if (command === 'undo') {
+            undoLastAction();
+            return;
+        }
+
+        if (command === 'restart') {
+            clearTerminal();
+            const preserved = preserveRules();
+            printToTerminal(`Restarting round ${currentRound}...`);
+            startRound(false);
+            rules = preserved.savedRules;
+            plantsInRoundRules = preserved.savedPlants;
+            // Removed the extra printing of rules to prevent duplication
+            return;
+        }
+
+        // Plant command handling
+        const match = command.match(/(?:plant )?(\w+) ([a-c][1-3])/i);
         if (match) {
             const plant = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
-            const coord = match[2];
-            const index = coordToIndex(coord);
+            const coord = match[2].toUpperCase();
+            const index = coordToIndex(coord.toLowerCase());
 
             if (!plantsInRoundRules.includes(plant)) {
-                printToTerminal(`You can only plant plants involved in the current round's rules!`);
-                printToTerminal(`Allowed plants: ${plantsInRoundRules.join(', ')}`);
+                printToTerminal(`Invalid plant for this round! Allowed: ${plantsInRoundRules.join(', ')}`);
                 return;
             }
 
-            if (!plants.includes(plant)) {
-                printToTerminal('Invalid plant type!');
-                return;
-            }
-
-            if (index < 0 || index >= 9) {
-                printToTerminal('Invalid coordinates!');
+            if (index === -1) {
+                printToTerminal(`Invalid coordinate! Use A1-C3`);
                 return;
             }
 
             if (board[index]) {
-                printToTerminal('This spot is already occupied!');
+                printToTerminal(`${coord} already occupied!`);
                 return;
             }
 
             if (remainingSeeds <= 0) {
-                printToTerminal('No more seeds left! Type "check" to verify your garden.');
+                printToTerminal('No seeds left! Type "check"');
                 return;
             }
+
+            // Save state for undo
+            undoStack.push({
+                board: [...board],
+                seeds: remainingSeeds
+            });
 
             board[index] = plant;
             document.getElementById(`cell-${index}`).textContent = plant[0];
             remainingSeeds--;
-            printToTerminal(`Planted ${plant} at ${coord}. ${remainingSeeds} seeds remaining.`);
+            printToTerminal(`Planted ${plant} at ${coord} (${remainingSeeds} left)`);
         } else {
-            printToTerminal('Invalid command! Use format: plant <type> <coordinate> (e.g., "plant Corn A1") or type "help"');
+            printToTerminal('Invalid command! Type "help"');
         }
     }
 });
 
 window.onload = function() {
-    printToTerminal('welcome to verdant.exe');
+    printToTerminal('Welcome to Verdant!');
+    printToTerminal('Grow plants according to the rules each round');
+    printToTerminal('Reach round 7 to win!');
     printToTerminal('                       ');
+    printToTerminal('------------------------');
     printToTerminal('=== How to Play ===');
-    printToTerminal('1. The game board is a 3x3 grid (A1-C3).');
-    printToTerminal('2. You must plant different types of plants on the grid.');
-    printToTerminal('3. Each round has specific rules about which plants must or must not be touching (including diagonally).');
-    printToTerminal('4. You will have a limited number of seeds to plant each round.');
-    printToTerminal('5. After planting, type "check" to see if you followed the rules.');
-    printToTerminal('6. If you succeed, you move to the next round. If you fail, you start over.');
-    printToTerminal('7. You must use all plant types atleast once.');
-    printToTerminal('8. To play the game, type text commands in the box below.');
+    printToTerminal('1. The game board is a 3x3 grid (A1-C3)');
+    printToTerminal('2. You must sow different types of seeds on the grid');
+    printToTerminal('3. Each round has specific rules about which seeds must or must not be touching (including diagonally)');
+    printToTerminal('4. You will have a limited number of seeds to sow each round');
+    printToTerminal('5. After sowing, type "check" to see if you followed the rules');
+    printToTerminal('6. If you succeed, you move to the next round. If you fail, you start over');
+    printToTerminal('7. You must use all seed types atleast once, but you can use any amount besides that');
+    printToTerminal('9. To play the game, type text commands in the box below.');
+    printToTerminal('------------------------');
     printToTerminal('                       ');
-    printToTerminal('Type "help" for a list of commands.');
+    printToTerminal('Commands: plant, check, rules, undo, restart');
+    printToTerminal('Type "help" for details');
     printToTerminal('                       ');
+
     startRound();
 };
