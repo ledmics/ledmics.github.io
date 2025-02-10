@@ -38,6 +38,161 @@ html::before {
   }
 
 
+  /* Main menu styles */
+  #main-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(36, 36, 36, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      backdrop-filter: blur(5px);
+  }
+
+  #main-menu h1 {
+      font-size: 72px;
+      color: #4caf50;
+      text-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+      margin-bottom: 40px;
+      animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+      0%, 100% {
+          transform: translateY(0);
+      }
+      50% {
+          transform: translateY(-10px);
+      }
+  }
+
+  #play-button {
+      background-color: #4caf50;
+      border: none;
+      padding: 15px 40px;
+      font-size: 24px;
+      color: #f5f5f5;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+  }
+
+  #play-button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(76, 175, 80, 0.8);
+  }
+
+  #play-button:active {
+      transform: scale(0.95);
+  }
+
+  .hidden {
+      display: none !important;
+  }
+
+  /* Settings Menu */
+  #settings-menu {
+    color: #f5f5f5;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(36, 36, 36, 0.98);
+      padding: 30px;
+      border-radius: 10px;
+      width: 400px;
+      max-width: 90%;
+      z-index: 10001;
+      backdrop-filter: blur(10px);
+      border: 1px solid #4caf50;
+  }
+
+  .settings-group {
+      margin-bottom: 20px;
+  }
+
+  .settings-group h3 {
+      color: #4caf50;
+      margin-bottom: 10px;
+  }
+
+  .settings-group label {
+      display: block;
+      margin: 10px 0;
+      color: #f5f5f5;
+  }
+
+  .settings-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+  }
+
+  #settings-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #4caf50;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #f5f5f5;
+      font-size: 16px;
+      z-index: 10000;
+  }
+
+  /* Accessibility Styles */
+  .high-contrast {
+      filter: contrast(1.5);
+  }
+
+  .high-contrast .cell {
+      color: #000 !important;
+      background-color: #fff !important;
+  }
+
+  .reduced-animations * {
+      animation: none !important;
+      transition: none !important;
+  }
+
+  .colorblind-mode .plant {
+      color: #0000ff !important;
+  }
+
+  .colorblind-mode .success {
+      color: #00ff00 !important;
+  }
+
+  .colorblind-mode .error {
+      color: #ff0000 !important;
+  }
+
+  /* Font Size Options */
+  .font-small {
+      font-size: 14px;
+  }
+
+  .font-medium {
+      font-size: 16px;
+  }
+
+  .font-large {
+      font-size: 18px;
+  }
+
+  .font-xlarge {
+      font-size: 20px;
+  }
+
   /* Cascadia Code font face */
 @font-face {
     font-family: 'CascadiaCodeNF';
@@ -122,6 +277,21 @@ body,
     /* Add shadow effect */
     box-shadow: 0 0 50px 20px rgba(36,36,36,0.8) inset,
                 0 0 30px 10px rgba(36,36,36,0.6);
+}
+
+/* Tutorial styles */
+#output .tutorial {
+    color: #9c27b0;
+    font-weight: bold;
+}
+
+.tutorial-mode #game-board::after {
+    filter: brightness(1.2) saturate(1.2);
+}
+
+.tutorial-mode #terminal {
+    background-color: rgba(45, 45, 45, 0.95);
+    border-color: #9c27b0;
 }
 
 /* Add shadow container */

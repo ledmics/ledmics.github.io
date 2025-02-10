@@ -5,10 +5,57 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-board-container">
+    <div id="main-menu">
+        <h1>verdant.exe</h1>
+        <button id="play-button">Play</button>
+    </div>
+    
+    <div id="settings-menu" class="hidden">
+        <h2>Settings</h2>
+        <div class="settings-group">
+            <h3>Accessibility</h3>
+            <label>
+                <input type="checkbox" id="high-contrast-mode"> High Contrast Mode
+            </label>
+            <label>
+                <input type="checkbox" id="reduce-animations"> Reduce Animations
+            </label>
+            <label>
+                <input type="checkbox" id="colorblind-mode"> Colorblind Mode
+            </label>
+        </div>
+        <div class="settings-group">
+            <h3>Game Settings</h3>
+            <label>
+                Font Size:
+                <select id="font-size">
+                    <option value="small">Small</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="large">Large</option>
+                    <option value="xlarge">Extra Large</option>
+                </select>
+            </label>
+            <label>
+                Sound Effects:
+                <select id="sound-effects">
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                </select>
+            </label>
+        </div>
+        <div class="settings-buttons">
+            <button id="save-settings">Save & Close</button>
+            <button id="reset-settings">Reset to Defaults</button>
+        </div>
+    </div>
+
+    <div id="settings-button" class="menu-button">
+        ⚙️ Settings
+    </div>
+    <div id="game-board-container" class="hidden">
         <div id="game-board"></div>
     </div>
-    <div id="terminal">
+    <div id="terminal" class="hidden">
         <div id="output"></div>
         <div id="input-line">
             <span id="prompt">&gt;</span>

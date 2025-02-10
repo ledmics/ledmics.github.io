@@ -6,6 +6,15 @@ let rules = [];
 let plantsInRoundRules = [];
 let undoStack = [];
 const MAX_UNDO_STACK_SIZE = 50;
+const SETTINGS_KEY = 'verdantSettings';
+let isTutorial = false;
+const DEFAULT_SETTINGS = {
+    highContrast: false,
+    reduceAnimations: false,
+    colorblindMode: false,
+    fontSize: 'medium',
+    soundEffects: 'on'
+};
 
 function initializeBoard() {
     const gameBoard = document.getElementById('game-board');
@@ -85,6 +94,87 @@ function generateRules() {
         if (!plantsInRoundRules.includes(plant1)) plantsInRoundRules.push(plant1);
         if (!plantsInRoundRules.includes(plant2)) plantsInRoundRules.push(plant2);
     }
+}
+
+function checkRules() {
+    // Ensure every required plant is present.
+    for (let requiredPlant of plantsInRoundRules) {
+        if (!board.includes(requiredPlant)) {
+            if (isTutorial) {
+                printToTerminal(`You must plant at least one ${requiredPlant}!`, 'warning');
+                printToTerminal('Remember, you need to use all plant types at least once.');
+            } else {
+                printToTerminal(`You must plant at least one ${requiredPlant}!`);
+            }
+            return false;
+        }
+    }
+    
+    // For each rule, ensure every instance obeys it.
+    for (const rule of rules) {
+        const plant1Positions = board.reduce((acc, plant, index) => {
+            if (plant === rule.plant1) acc.push(index);
+            return acc;
+        }, []);
+        const plant2Positions = board.reduce((acc, plant, index) => {
+            if (plant === rule.plant2) acc.push(index);
+            return acc;
+        }, []);
+        
+        if (rule.mustBeAdjacent) {
+            for (const pos1 of plant1Positions) {
+                let found = false;
+                for (const pos2 of plant2Positions) {
+                    if (areAdjacent(pos1, pos2)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    if (isTutorial) {
+                        printToTerminal(`Every <span class="plant">${rule.plant1}</span> must be adjacent to a <span class="plant">${rule.plant2}</span>.`, 'warning');
+                        printToTerminal('Try placing them next to each other (including diagonally).');
+                    } else {
+                        printToTerminal(`Round failed: Every <span class="plant">${rule.plant1}</span> must be adjacent to a <span class="plant">${rule.plant2}</span>.`, 'error');
+                    }
+                    return false;
+                }
+            }
+            for (const pos2 of plant2Positions) {
+                let found = false;
+                for (const pos1 of plant1Positions) {
+                    if (areAdjacent(pos2, pos1)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    if (isTutorial) {
+                        printToTerminal(`Every <span class="plant">${rule.plant2}</span> must be adjacent to a <span class="plant">${rule.plant1}</span>.`, 'warning');
+                        printToTerminal('Try placing them next to each other (including diagonally).');
+                    } else {
+                        printToTerminal(`Round failed: Every <span class="plant">${rule.plant2}</span> must be adjacent to a <span class="plant">${rule.plant1}</span>.`, 'error');
+                    }
+                    return false;
+                }
+            }
+        } else {
+            for (const pos1 of plant1Positions) {
+                for (const pos2 of plant2Positions) {
+                    if (areAdjacent(pos1, pos2)) {
+                        if (isTutorial) {
+                            printToTerminal(`<span class="plant">${rule.plant1}</span> cannot be adjacent to <span class="plant">${rule.plant2}</span>.`, 'warning');
+                            printToTerminal('Make sure they are not next to each other (including diagonally).');
+                        } else {
+                            printToTerminal(`Round failed: <span class="plant">${rule.plant1}</span> cannot be adjacent to <span class="plant">${rule.plant2}</span>.`, 'error');
+                        }
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
 }
 
 function printToTerminal(text, className = '') {
@@ -252,6 +342,38 @@ function checkRules() {
 }
 
 
+function startTutorial() {
+    isTutorial = true;
+    currentRound = 1;
+    clearTerminal();
+    
+    // Hardcoded tutorial rules
+    rules = [
+        { plant1: 'Corn', plant2: 'Tomato', mustBeAdjacent: true },
+        { plant1: 'Potato', plant2: 'Lettuce', mustBeAdjacent: false }
+    ];
+    plantsInRoundRules = ['Corn', 'Tomato', 'Potato', 'Lettuce'];
+    remainingSeeds = 4;
+
+    printToTerminal('<span class="system">=== Tutorial Mode ===</span>');
+    printToTerminal('Welcome to the Verdant tutorial!');
+    printToTerminal('Let\'s learn how to play...');
+    printToTerminal('&nbsp;');
+    printToTerminal('1. The game board is a 3x3 grid (A1-C3)');
+    printToTerminal('2. You need to plant seeds according to specific rules');
+    printToTerminal('3. Each plant is represented by its first letter');
+    printToTerminal('4. Type commands like "plant corn A1" to place seeds');
+    printToTerminal('5. You must follow all adjacency rules');
+    printToTerminal('&nbsp;');
+    printToTerminal('Current Rules:');
+    displayRules();
+    printToTerminal('&nbsp;');
+    printToTerminal('Try planting some seeds!');
+    printToTerminal('Example: <span class="command">corn A1</span>');
+    printToTerminal('Example: <span class="command">tomato B1</span>');
+    printToTerminal('When done, type <span class="command">submit</span>');
+}
+
 function preserveRules() {
     return {
         savedRules: [...rules],
@@ -309,6 +431,7 @@ function showHelp() {
     printToTerminal('- undo       Undo last action');
     printToTerminal('- restart    Restart current round');
     printToTerminal('- clear      Clean terminal');
+    printToTerminal('- tutorial   Start tutorial mode');
     printToTerminal('- help       Show this message');
     printToTerminal('Allowed plants: ' + plantsInRoundRules.join(', '));
     printToTerminal('Coordinates: A1-C3');
@@ -354,20 +477,40 @@ document.getElementById('command-input').addEventListener('keypress', function(e
             if (remainingSeeds > 0) {
                 printToTerminal('Plant all seeds first! Type "submit" when done.');
             } else if (checkRules()) {
-                printToTerminal('Success! Advancing...', 'success');
-                
-                // Start rain transition with darkening effect
-                startRain().then(() => {
-                    currentRound++;
-                    startRound();
-                });
+                if (isTutorial) {
+                    printToTerminal('Great job! You completed the tutorial!', 'success');
+                    printToTerminal('Returning to normal game mode...');
+                    setTimeout(() => {
+                        clearTerminal();
+                        isTutorial = false;
+                        currentRound = 1;
+                        startRound();
+                    }, 1000);
+                } else {
+                    printToTerminal('Success! Advancing...', 'success');
+                    startRain().then(() => {
+                        currentRound++;
+                        startRound();
+                    });
+                }
             } else {
-                currentRound = currentRound > 6 ? 7 : 1;
-                printToTerminal(currentRound > 6 
-                    ? 'Failed! Continuing from round 7...' 
-                    : 'Failed! Restarting from round 1...', 'error');
-                printToTerminal('');
-                setTimeout(startRound, 1500);
+                if (isTutorial) {
+                    printToTerminal('Let\'s try again! Remember the rules:', 'warning');
+                    displayRules();
+                    // Reset the board and seeds for tutorial
+                    initializeBoard();
+                    remainingSeeds = 4;
+                    printToTerminal('The board has been reset. Try again!');
+                    printToTerminal('Example: <span class="command">plant corn A1</span>');
+                    printToTerminal('Example: <span class="command">plant tomato B1</span>');
+                } else {
+                    currentRound = currentRound > 6 ? 7 : 1;
+                    printToTerminal(currentRound > 6 
+                        ? 'Failed! Continuing from round 7...' 
+                        : 'Failed! Restarting from round 1...', 'error');
+                    printToTerminal('');
+                    setTimeout(startRound, 1500);
+                }
             }
             return;
         }
@@ -379,6 +522,11 @@ document.getElementById('command-input').addEventListener('keypress', function(e
 
         if (command === 'undo') {
             undoLastAction();
+            return;
+        }
+
+        if (command === 'tutorial') {
+            startTutorial();
             return;
         }
 
@@ -437,32 +585,111 @@ document.getElementById('command-input').addEventListener('keypress', function(e
             board[index] = plant;
             document.getElementById(`cell-${index}`).textContent = plant[0];
             remainingSeeds--;
-            printToTerminal(`Planted <span class="plant">${plant}</span> at <span class="coord">${coord}</span> (<span class="info">${remainingSeeds}</span> left)`, 'success');
+            printToTerminal(`Planted <span class="plant">${plant}</span> at <span class="coord">${coord}</span> (<span class="info">${remainingSeeds}</span> seeds left)`, 'success');
         } else {
             printToTerminal('Invalid command! Type "help"');
         }
     }
 });
 
-window.onload = function() {
-    printToTerminal('<span class="system">Welcome to Verdant!</span>');
-    printToTerminal('Sow seeds according to the rules each round');
-    printToTerminal('&nbsp;');  // Use &nbsp; for blank lines
-    printToTerminal('------------------------');
-    printToTerminal('<span class="info">=== How to Play ===</span>');
-    printToTerminal('1. The game board is a 3x3 grid (<span class="coord">A1-C3</span>)');
-    printToTerminal('2. You must sow different types of seeds on the grid');
-    printToTerminal('3. Each round has specific rules about which seeds must or must not be touching (including diagonally)');
-    printToTerminal('4. You will have a limited number of seeds to sow each round');
-    printToTerminal('5. After sowing, type <span class="command">submit</span> to verify your garden');
-    printToTerminal('6. If you succeed, you move to the next round. If you fail, you start over');
-    printToTerminal('7. You must use all seed types at least once, but you can use any amount besides that');
-    printToTerminal('9. To play the game, type text commands in the box below.');
-    printToTerminal('------------------------');
-    printToTerminal('&nbsp;');  // Use &nbsp; for blank lines
-    printToTerminal('Commands: <span class="command">submit</span>, <span class="command">rules</span>, <span class="command">undo</span>, <span class="command">restart</span>');
-    printToTerminal('Type <span class="command">help</span> for details');
-    printToTerminal('&nbsp;');
+const mainMenu = document.getElementById('main-menu');
+const playButton = document.getElementById('play-button');
+const gameContainer = document.getElementById('game-board-container');
+const terminal = document.getElementById('terminal');
 
-    startRound();
+function loadSettings() {
+    const savedSettings = localStorage.getItem(SETTINGS_KEY);
+    return savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS;
+}
+
+function saveSettings(settings) {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    applySettings(settings);
+}
+
+function applySettings(settings) {
+    // Accessibility
+    document.body.classList.toggle('high-contrast', settings.highContrast);
+    document.body.classList.toggle('reduced-animations', settings.reduceAnimations);
+    document.body.classList.toggle('colorblind-mode', settings.colorblindMode);
+    
+    // Font Size
+    document.body.classList.remove('font-small', 'font-medium', 'font-large', 'font-xlarge');
+    document.body.classList.add(`font-${settings.fontSize}`);
+    
+    // Sound Effects
+    // You can add sound effect logic here when implemented
+}
+
+window.onload = function() {
+    const settings = loadSettings();
+    applySettings(settings);
+    // Hide game elements initially
+    gameContainer.classList.add('hidden');
+    terminal.classList.add('hidden');
+    
+    // Show main menu
+    mainMenu.classList.remove('hidden');
+    
+    // Play button click handler
+    playButton.addEventListener('click', () => {
+        mainMenu.classList.add('hidden');
+        gameContainer.classList.remove('hidden');
+        terminal.classList.remove('hidden');
+        
+        // Initialize game
+        printToTerminal('<span class="system">Welcome to Verdant!</span>');
+        printToTerminal('Sow seeds according to the rules each round');
+        printToTerminal('&nbsp;');
+        printToTerminal('------------------------');
+        printToTerminal('<span class="info">=== How to Play ===</span>');
+        printToTerminal('1. The game board is a 3x3 grid (<span class="coord">A1-C3</span>)');
+        printToTerminal('2. You must sow different types of seeds on the grid');
+        printToTerminal('3. Each round has specific rules about which seeds must or must not be touching (including diagonally)');
+        printToTerminal('4. You will have a specific number of seeds to sow each round');
+        printToTerminal('5. After sowing, type <span class="command">submit</span> to verify your garden');
+        printToTerminal('6. If you succeed, you move to the next round. If you fail, you start over');
+        printToTerminal('7. You must use all seed types at least once');
+        printToTerminal('8. To play the game, type text commands in the box below.');
+        printToTerminal('------------------------');
+        printToTerminal('&nbsp;');
+        printToTerminal('Commands: <span class="command">submit</span>, <span class="command">rules</span>, <span class="command">undo</span>, <span class="command">restart</span>');
+        printToTerminal('Type <span class="command">help</span> for details, or <span class="command">tutorial</span> for a short tutorial.');
+        printToTerminal('&nbsp;');
+
+        startRound();
+    });
+
+    // Settings event listeners
+    document.getElementById('settings-button').addEventListener('click', () => {
+        const settings = loadSettings();
+        
+        // Populate settings form
+        document.getElementById('high-contrast-mode').checked = settings.highContrast;
+        document.getElementById('reduce-animations').checked = settings.reduceAnimations;
+        document.getElementById('colorblind-mode').checked = settings.colorblindMode;
+        document.getElementById('font-size').value = settings.fontSize;
+        document.getElementById('sound-effects').value = settings.soundEffects;
+        
+        // Show settings menu
+        document.getElementById('settings-menu').classList.remove('hidden');
+    });
+
+    document.getElementById('save-settings').addEventListener('click', () => {
+        const newSettings = {
+            highContrast: document.getElementById('high-contrast-mode').checked,
+            reduceAnimations: document.getElementById('reduce-animations').checked,
+            colorblindMode: document.getElementById('colorblind-mode').checked,
+            fontSize: document.getElementById('font-size').value,
+            soundEffects: document.getElementById('sound-effects').value
+        };
+        
+        saveSettings(newSettings);
+        document.getElementById('settings-menu').classList.add('hidden');
+    });
+
+    document.getElementById('reset-settings').addEventListener('click', () => {
+        saveSettings(DEFAULT_SETTINGS);
+        document.getElementById('settings-menu').classList.add('hidden');
+    });
 };
