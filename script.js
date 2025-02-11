@@ -616,9 +616,7 @@ function applySettings(settings) {
     // Font Size
     document.body.classList.remove('font-small', 'font-medium', 'font-large', 'font-xlarge');
     document.body.classList.add(`font-${settings.fontSize}`);
-    
-    // Sound Effects
-    // You can add sound effect logic here when implemented
+
 }
 
 window.onload = function() {
